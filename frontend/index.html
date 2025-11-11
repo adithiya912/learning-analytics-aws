@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+
+        .results h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .risk-high {
+            background: #dc3545;
+            color: white;
+        }
+
+        .risk-low {
+            background: #28a745;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .config-section {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .config-section input {
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Learning Analytics Dashboard</h1>
+
+        <!-- API Configuration -->
+        <div class="card config-section">
+            <h2>⚙️ API Configuration</h2>
+            <div class="form-group">
+                <label>API Base URL:</label>
+                <input type="text" id="apiUrl" placeholder="..." value="https://4y6ht4o73c.execute-api.eu-north-1.amazonaws.com/prod">
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <!-- Record Progress Form -->
+            <div class="card">
+                <h2>📝 Record Student Progress</h2>
+                <form id="progressForm">
+                    <div class="form-group">
+                        <label>Student ID:</label>
+                        <input type="text" id="userId" required placeholder="student001">
+                    </div>
+                    <div class="form-group">
+                        <label>Course ID:</label>
+                        <input type="text" id="courseId" required placeholder="CS101">
+                    </div>
+                    <div class="form-group">
+                        <label>Quiz Score (0-100):</label>
+                        <input type="number" id="quizScore" required min="0" max="100" placeholder="75">
+                    </div>
+                    <div class="form-group">
+                        <label>Completion Rate (%):</label>
+                        <input type="number" id="completionRate" required min="0" max="100" placeholder="80">
+                    </div>
+                    <div class="form-group">
+                        <label>Time Spent (minutes):</label>
+                        <input type="number" id="timeSpent" required min="0" placeholder="120">
+                    </div>
+                    <button type="submit">Submit Progress</button>
+                </form>
+            </div>
+
+            <!-- Student Analytics -->
+            <div class="card">
+                <h2>📊 Student Analytics</h2>
+                <div class="form-group">
+                    <label>Student ID:</label>
+                    <input type="text" id="analyticsUserId" placeholder="student001">
+                </div>
+                <button onclick="getStudentAnalytics()">Get Analytics</button>
+            </div>
+
+            <!-- Course Statistics -->
+            <div class="card">
+                <h2>📈 Course Statistics</h2>
+                <div class="form-group">
+                    <label>Course ID:</label>
+                    <input type="text" id="analyticsCourseId" placeholder="CS101">
+                </div>
+                <button onclick="getCourseStatistics()">Get Statistics</button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Get API URL
+        function getApiUrl() {
+            return document.getElementById('apiUrl').value.trim();
+        }
+
+        // Show loading
+        function showLoading(message = 'Loading...') {
+            document.getElementById('results').innerHTML = `
+                <div class="results">
+                    <div class="loading">
+                        <h2>${message}</h2>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('results').innerHTML = `
+                <div class="results">
+                    <div class="alert alert-danger">
+                        ❌ Error: ${message}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Record Progress
+        document.getElementById('progressForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                userId: document.getElementById('userId').value,
+                courseId: document.getElementById('courseId').value,
+                quizScore: parseInt(document.getElementById('quizScore').value),
+                completionRate: parseInt(document.getElementById('completionRate').value),
+                timeSpent: parseInt(document.getElementById('timeSpent').value)
+            };
+
+            showLoading('Recording progress...');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/progress`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('results').innerHTML = `
+                        <div class="results">
+                            <div class="alert alert-success">
+                                ✅ ${result.message}
+                            </div>
+                            <div class="result-card">
+                                <h3>Recorded Data</h3>
+                                <div class="stat">
+                                    <span class="stat-label">Student ID:</span>
+                                    <span class="stat-value">${data.userId}</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Course ID:</span>
+                                    <span class="stat-value">${data.courseId}</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Quiz Score:</span>
+                                    <span class="stat-value">${data.quizScore}%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Completion Rate:</span>
+                                    <span class="stat-value">${data.completionRate}%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Time Spent:</span>
+                                    <span class="stat-value">${data.timeSpent} mins</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    // Clear form
+                    document.getElementById('progressForm').reset();
+                } else {
+                    showError(result.error || 'Failed to record progress');
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        // Get Student Analytics
+        async function getStudentAnalytics() {
+            const userId = document.getElementById('analyticsUserId').value.trim();
+            
+            if (!userId) {
+                showError('Please enter a Student ID');
+                return;
+            }
+
+            showLoading('Analyzing student data...');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/analytics/student/${userId}`);
+                const result = await response.json();
+
+                if (response.ok) {
+                    const analytics = result.analytics;
+                    const isAtRisk = analytics.is_at_risk;
+
+                    document.getElementById('results').innerHTML = `
+                        <div class="results">
+                            <h2>Student Analytics: ${result.userId}</h2>
+                            
+                            ${isAtRisk ? `
+                                <div class="alert alert-danger">
+                                    ⚠️ ALERT: This student is at high risk!
+                                    ${analytics.alert_sent ? ' Email notification sent to instructor.' : ''}
+                                </div>
+                            ` : `
+                                <div class="alert alert-success">
+                                    ✅ Student is performing well!
+                                </div>
+                            `}
+
+                            <div class="result-card">
+                                <h3>Risk Assessment</h3>
+                                <div class="stat">
+                                    <span class="stat-label">Status:</span>
+                                    <span class="stat-value">
+                                        <span class="risk-badge ${isAtRisk ? 'risk-high' : 'risk-low'}">
+                                            ${isAtRisk ? 'AT RISK' : 'ON TRACK'}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Risk Score:</span>
+                                    <span class="stat-value">${(analytics.risk_score * 100).toFixed(0)}%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Reason:</span>
+                                    <span class="stat-value">${analytics.reason}</span>
+                                </div>
+                            </div>
+
+                            <div class="result-card">
+                                <h3>Performance Metrics</h3>
+                                <div class="stat">
+                                    <span class="stat-label">Average Quiz Score:</span>
+                                    <span class="stat-value">${analytics.avg_quiz_score}%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Average Completion:</span>
+                                    <span class="stat-value">${analytics.avg_completion_rate}%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Average Time Spent:</span>
+                                    <span class="stat-value">${analytics.avg_time_spent} mins</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Total Records:</span>
+                                    <span class="stat-value">${result.total_records}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    showError(result.error || 'Failed to get analytics');
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Get Course Statistics
+        async function getCourseStatistics() {
+            const courseId = document.getElementById('analyticsCourseId').value.trim();
+            
+            if (!courseId) {
+                showError('Please enter a Course ID');
+                return;
+            }
+
+            showLoading('Loading course statistics...');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/analytics/course/${courseId}`);
+                const result = await response.json();
+
+                if (response.ok) {
+                    const stats = result.statistics;
+
+                    document.getElementById('results').innerHTML = `
+                        <div class="results">
+                            <h2>Course Statistics: ${result.courseId}</h2>
+                            
+                            <div class="result-card">
+                                <h3>Overview</h3>
+                                <div class="stat">
+                                    <span class="stat-label">Total Students:</span>
+                                    <span class="stat-value">${result.total_students}</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Total Records:</span>
+                                    <span class="stat-value">${result.total_records}</span>
+                                </div>
+                            </div>
+
+                            <div class="result-card">
+                                <h3>Performance Statistics</h3>
+                                <div class="stat">
+                                    <span class="stat-label">Average Score:</span>
+                                    <span class="stat-value">${stats.average_score}%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Average Completion:</span>
+                                    <span class="stat-value">${stats.average_completion_rate}%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Average Time Spent:</span>
+                                    <span class="stat-value">${stats.average_time_spent} mins</span>
+                                </div>
+                            </div>
+
+                            <div class="result-card">
+                                <h3>Score Range</h3>
+                                <div class="stat">
+                                    <span class="stat-label">Minimum Score:</span>
+                                    <span class="stat-value">${stats.min_score}%</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Maximum Score:</span>
+                                    <span class="stat-value">${stats.max_score}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    showError(result.error || 'Failed to get course statistics');
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+    </script>
+</body>
+</html>
