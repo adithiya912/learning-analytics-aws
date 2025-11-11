@@ -1,0 +1,170 @@
+{
+	"info": {
+		"_postman_id": "dc597faa-f5c3-478e-aa23-271c99a53157",
+		"name": "Learning Analytics API",
+		"description": "Real-time Learning Analytics and Automated Intervention System built on AWS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42484730"
+	},
+	"item": [
+		{
+			"name": "1. Record Student Progress",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": \"student001\",\r\n  \"courseId\": \"CS101\",\r\n  \"quizScore\": 45,\r\n  \"completionRate\": 30,\r\n  \"timeSpent\": 50\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/progress",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"progress"
+					]
+				},
+				"description": "Records student learning activity in real-time"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get Student Analytics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/analytics/student/{{student_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"analytics",
+						"student",
+						"{{student_id}}"
+					]
+				},
+				"description": "Retrieves student risk analysis using ML prediction"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Get Course Statistics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/analytics/course/{{course_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"analytics",
+						"course",
+						"{{course_id}}"
+					]
+				},
+				"description": "Retrieves aggregate statistics for entire course"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Add Low-Performing Student",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": \"student001\",\r\n  \"courseId\": \"CS101\",\r\n  \"quizScore\": 25,\r\n  \"completionRate\": 15,\r\n  \"timeSpent\": 20\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/progress",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"progress"
+					]
+				},
+				"description": "Add data that will trigger at-risk alert (risk_score > 0.7)"
+			},
+			"response": []
+		},
+		{
+			"name": "5. Add High-Performing Student",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": \"student002\",\r\n  \"courseId\": \"CS101\",\r\n  \"quizScore\": 85,\r\n  \"completionRate\": 90,\r\n  \"timeSpent\": 200\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/progress",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"progress"
+					]
+				},
+				"description": "Add data for well-performing student (will not trigger alert)"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://4y6ht4o73c.execute-api.eu-north-1.amazonaws.com/prod",
+			"type": "default"
+		},
+		{
+			"key": "student_id",
+			"value": "student001",
+			"type": "default"
+		},
+		{
+			"key": "course_id",
+			"value": "CS101",
+			"type": "default"
+		}
+	]
+}
